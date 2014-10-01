@@ -58,6 +58,7 @@ void modbus_configure(HardwareSerial *SerialPort,
 											unsigned char _slaveID, 
                       unsigned char _TxEnablePin, 
                       unsigned int _holdingRegsSize,
-                      unsigned int* _regs);
+                      unsigned int* _regs,
+					  void(*newCallbackAddr)(unsigned char, unsigned int));
 
 #endif
