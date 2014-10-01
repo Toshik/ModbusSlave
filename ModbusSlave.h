@@ -53,12 +53,12 @@
 // function definitions
 unsigned int modbus_update();
 void modbus_configure(HardwareSerial *SerialPort,
-											long baud,
-											unsigned char byteFormat,
-											unsigned char _slaveID, 
-                      unsigned char _TxEnablePin, 
-                      unsigned int _holdingRegsSize,
-                      unsigned int* _regs,
-					  void(*newCallbackAddr)(unsigned char, unsigned int));
+	long baud,
+	unsigned char byteFormat,
+	unsigned char _slaveID,
+	unsigned char _TxEnablePin,
+	unsigned int _holdingRegsSize,
+	unsigned int* _regs,
+	void(*newCallbackAddr)(unsigned char, unsigned int));
 
 #endif

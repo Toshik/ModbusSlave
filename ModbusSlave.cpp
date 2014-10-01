@@ -25,45 +25,45 @@ unsigned int calculateCRC(unsigned char bufferSize);
 void sendPacket(unsigned char bufferSize);
 
 void modbus_configure(HardwareSerial *SerialPort,
-											long baud,
-											unsigned char byteFormat,
-											unsigned char _slaveID, 
-                      unsigned char _TxEnablePin, 
-											unsigned int _holdingRegsSize,
-                      unsigned int* _regs,
-					  void(*newCallbackAddr)(unsigned char, unsigned int))
+	long baud,
+	unsigned char byteFormat,
+	unsigned char _slaveID,
+	unsigned char _TxEnablePin,
+	unsigned int _holdingRegsSize,
+	unsigned int* _regs,
+	void(*newCallbackAddr)(unsigned char, unsigned int))
 {
-  ModbusPort = SerialPort;
+	ModbusPort = SerialPort;
 	(*ModbusPort).begin(baud, byteFormat);
 	slaveID = _slaveID;
-  holdingRegsSize = _holdingRegsSize; 
-  regs = _regs;
-  TxEnablePin = _TxEnablePin; 
-  pinMode(TxEnablePin, OUTPUT);
-  digitalWrite(TxEnablePin, LOW);
-  errorCount = 0; // initialize errorCount
-  callback = newCallbackAddr;
-	
+	holdingRegsSize = _holdingRegsSize;
+	regs = _regs;
+	TxEnablePin = _TxEnablePin;
+	pinMode(TxEnablePin, OUTPUT);
+	digitalWrite(TxEnablePin, LOW);
+	errorCount = 0; // initialize errorCount
+	callback = newCallbackAddr;
+
 	// Modbus states that a baud rate higher than 19200 must use a fixed 750 us 
-  // for inter character time out and 1.75 ms for a frame delay for baud rates
-  // below 19200 the timing is more critical and has to be calculated.
-  // E.g. 9600 baud in a 10 bit packet is 960 characters per second
-  // In milliseconds this will be 960characters per 1000ms. So for 1 character
-  // 1000ms/960characters is 1.04167ms per character and finally modbus states
-  // an inter-character must be 1.5T or 1.5 times longer than a character. Thus
-  // 1.5T = 1.04167ms * 1.5 = 1.5625ms. A frame delay is 3.5T.
-	
+	// for inter character time out and 1.75 ms for a frame delay for baud rates
+	// below 19200 the timing is more critical and has to be calculated.
+	// E.g. 9600 baud in a 10 bit packet is 960 characters per second
+	// In milliseconds this will be 960characters per 1000ms. So for 1 character
+	// 1000ms/960characters is 1.04167ms per character and finally modbus states
+	// an inter-character must be 1.5T or 1.5 times longer than a character. Thus
+	// 1.5T = 1.04167ms * 1.5 = 1.5625ms. A frame delay is 3.5T.
+
 	if (baud > 19200)
 	{
-		T1_5 = 750; 
-		T3_5 = 1750; 
+		T1_5 = 750;
+		T3_5 = 1750;
 	}
-	else 
+	else
 	{
-		T1_5 = 15000000/baud; // 1T * 1.5 = T1.5
-		T3_5 = 35000000/baud; // 1T * 3.5 = T3.5
+		T1_5 = 15000000 / baud; // 1T * 1.5 = T1.5
+		T3_5 = 35000000 / baud; // 1T * 3.5 = T3.5
 	}
-}   
+}
 
 unsigned int modbus_update()
 {
@@ -210,8 +210,8 @@ unsigned int modbus_update()
 
 void exceptionResponse(unsigned char exception)
 {
-  // each call to exceptionResponse() will increment the errorCount
-	errorCount++; 
+	// each call to exceptionResponse() will increment the errorCount
+	errorCount++;
 	if (!broadcastFlag) // don't respond if its a broadcast message
 	{
 		frame[0] = slaveID;
@@ -220,47 +220,47 @@ void exceptionResponse(unsigned char exception)
 		unsigned int crc16 = calculateCRC(3); // ID, function|0x80, exception code
 		frame[3] = crc16 >> 8;
 		frame[4] = crc16 & 0xFF;
-    // exception response is always 5 bytes 
-    // ID, function + 0x80, exception code, 2 bytes crc
-		sendPacket(5); 
+		// exception response is always 5 bytes 
+		// ID, function + 0x80, exception code, 2 bytes crc
+		sendPacket(5);
 	}
 }
 
-unsigned int calculateCRC(unsigned char bufferSize) 
+unsigned int calculateCRC(unsigned char bufferSize)
 {
-  unsigned int temp, temp2, flag;
-  temp = 0xFFFF;
-  for (unsigned char i = 0; i < bufferSize; i++)
-  {
-    temp = temp ^ frame[i];
-    for (unsigned char j = 1; j <= 8; j++)
-    {
-      flag = temp & 0x0001;
-      temp >>= 1;
-      if (flag)
-        temp ^= 0xA001;
-    }
-  }
-  // Reverse byte order. 
-  temp2 = temp >> 8;
-  temp = (temp << 8) | temp2;
-  temp &= 0xFFFF; 
-  // the returned value is already swapped
-  // crcLo byte is first & crcHi byte is last
-  return temp; 
+	unsigned int temp, temp2, flag;
+	temp = 0xFFFF;
+	for (unsigned char i = 0; i < bufferSize; i++)
+	{
+		temp = temp ^ frame[i];
+		for (unsigned char j = 1; j <= 8; j++)
+		{
+			flag = temp & 0x0001;
+			temp >>= 1;
+			if (flag)
+				temp ^= 0xA001;
+		}
+	}
+	// Reverse byte order. 
+	temp2 = temp >> 8;
+	temp = (temp << 8) | temp2;
+	temp &= 0xFFFF;
+	// the returned value is already swapped
+	// crcLo byte is first & crcHi byte is last
+	return temp;
 }
 
 void sendPacket(unsigned char bufferSize)
 {
-  digitalWrite(TxEnablePin, HIGH);
-		
-  for (unsigned char i = 0; i < bufferSize; i++)
-    (*ModbusPort).write(frame[i]);
-		
+	digitalWrite(TxEnablePin, HIGH);
+
+	for (unsigned char i = 0; i < bufferSize; i++)
+		(*ModbusPort).write(frame[i]);
+
 	(*ModbusPort).flush();
-	
+
 	// allow a frame delay to indicate end of transmission
-	delayMicroseconds(T3_5); 
-	
-  digitalWrite(TxEnablePin, LOW);
+	delayMicroseconds(T3_5);
+
+	digitalWrite(TxEnablePin, LOW);
 }
