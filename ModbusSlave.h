@@ -1,10 +1,10 @@
-#ifndef SIMPLE_MODBUS_SLAVE_H
-#define SIMPLE_MODBUS_SLAVE_H
+#ifndef MODBUS_SLAVE_H
+#define MODBUS_SLAVE_H
 
-// SimpleModbusSlaveV7
+// ModbusSlave
 
 /*
- SimpleModbusSlave allows you to communicate
+ ModbusSlave allows you to communicate
  to any slave using the Modbus RTU protocol.
  
  This implementation DOES NOT fully comply with the Modbus specifications.
@@ -14,7 +14,7 @@
  inter character time out and frame time out by incorporating a maximum
  time out allowable when reading from the message stream.
  
- SimpleModbusSlave implements an unsigned int return value on a call to modbus_update().
+ ModbusSlave implements an unsigned int return value on a call to modbus_update().
  This value is the total error count since the slave started. It's useful for fault finding.
  
  This code is for a Modbus slave implementing functions 3 and 16

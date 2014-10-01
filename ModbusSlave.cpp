@@ -1,4 +1,4 @@
-#include "SimpleModbusSlave.h"
+#include "ModbusSlave.h"
 #include "HardwareSerial.h"
 
 
